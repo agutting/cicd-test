@@ -7,8 +7,6 @@ on:
   # Triggers the workflow on push or pull request events but only for the "main" branch
   push:
     branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -25,12 +23,15 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v3
 
-      # Runs a single command using the runners shell
-      - name: Run a one-line script
-        run: echo Hello, world!
-
-      # Runs a set of commands using the runners shell
-      - name: Run a multi-line script
+      # Creates ssh private key file, writes private key from GH secret. Generates known_hosts file
+      - name: Write SSH Keys
         run: |
-          echo Add other actions to build,
-          echo test, and deploy your project.
+          install -m 600 -D /dev/null ~/.ssh/id_ed25519
+          echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/id_ed25519
+          ssh-keyscan -H {{ secrets.DEPLOY_SSH_HOST }} > ~/.ssh/known_hosts
+
+      # Connects to remote server using SSH and copies files using rsync
+      - name: Deploy
+        run: |
+          ssh -i ~/.ssh/id_ed25519 {{ secrets.DEPLOY_SSH_USER }}@{{ secrets.DEPLOY_SSH_HOST }}
+          ls /var/www/gutting.net/html
