@@ -36,8 +36,7 @@ jobs:
       # Connects to remote server using SSH and copies files using rsync
       - name: Deploy
         run: |
-          ssh -i ~/.ssh/id_ed25519 $DEPLOY_SSH_USER@$DEPLOY_SSH_HOST ls /var/www/gutting.net/html
-          ls .
+          rsync -a -e "ssh -i ~/.ssh/id_ed25519" ./src/ $DEPLOY_SSH_USER@$DEPLOY_SSH_HOST:/var/www/gutting.net/html
         env:
           DEPLOY_SSH_HOST: ${{secrets.DEPLOY_SSH_HOST}}
           DEPLOY_SSH_USER: ${{secrets.DEPLOY_SSH_USER}}
